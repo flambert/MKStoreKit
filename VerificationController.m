@@ -37,6 +37,7 @@ static VerificationController *singleton;
     {
         if (error)
         {
+            NSLog(@"Error deserializing PLIST\n%@", error);
 #warning Handle the error here.
         }
         return nil;
@@ -55,6 +56,7 @@ static VerificationController *singleton;
     {
         if (error)
         {
+            NSLog(@"Error deserializing JSON\n%@", error);
 #warning Handle the error here.
         }
         return nil;

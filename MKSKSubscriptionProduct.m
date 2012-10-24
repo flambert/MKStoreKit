@@ -68,7 +68,8 @@
 	[theRequest setHTTPMethod:@"POST"];		
 	[theRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
 	
-  NSString *receiptString = [NSString stringWithFormat:@"{\"receipt-data\":\"%@\" \"password\":\"%@\"}", [self.receipt base64EncodedString], kSharedSecret];        
+  NSAssert([[[MKStoreManager sharedManager] sharedSecret] length] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
+  NSString *receiptString = [NSString stringWithFormat:@"{\"receipt-data\":\"%@\" \"password\":\"%@\"}", [self.receipt base64EncodedString], [[MKStoreManager sharedManager] sharedSecret]];
   
 	NSString *length = [NSString stringWithFormat:@"%d", [receiptString length]];	
 	[theRequest setValue:length forHTTPHeaderField:@"Content-Length"];	

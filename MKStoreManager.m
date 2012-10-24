@@ -170,6 +170,53 @@ static MKStoreManager* _sharedStoreManager;
   return [str dataUsingEncoding:NSUTF8StringEncoding];
 }
 
+#pragma mark Configuration
+
+static NSDictionary* MKStoreManager__storeKitItems;
+static NSString* MKStoreManager__sharedSecret;
+
++ (void)setStoreKitItems:(NSDictionary *)storeKitItems sharedSecret:(NSString *)sharedSecret
+{
+    MKStoreManager__storeKitItems = [storeKitItems copy];
+    MKStoreManager__sharedSecret = [sharedSecret copy];
+}
+
+- (NSDictionary *)storeKitItems
+{
+    return MKStoreManager__storeKitItems;
+}
+
+- (NSString *)sharedSecret
+{
+    return MKStoreManager__sharedSecret;
+}
+
+static BOOL MKStoreManager__reviewAllowed;
+static NSUInteger MKStoreManager__serverProductModel;
+static NSString* MKStoreManager__ownServer;
+
++ (void)setReviewAllowed:(BOOL)reviewAllowed serverProductModel:(NSUInteger)serverProductModel ownServer:(NSString *)ownServer
+{
+    MKStoreManager__reviewAllowed = reviewAllowed;
+    MKStoreManager__serverProductModel = serverProductModel;
+    MKStoreManager__ownServer = [ownServer copy];
+}
+
+- (BOOL)reviewAllowed
+{
+    return MKStoreManager__reviewAllowed;
+}
+
+- (NSUInteger)serverProductModel
+{
+    return MKStoreManager__serverProductModel;
+}
+
+- (NSString *)ownServer
+{
+    return MKStoreManager__ownServer;
+}
+
 #pragma mark Singleton Methods
 
 + (MKStoreManager*)sharedManager
@@ -200,13 +247,6 @@ static MKStoreManager* _sharedStoreManager;
 
 #pragma mark Internal MKStoreKit functions
 
-+(NSDictionary*) storeKitItems
-{
-  return [NSDictionary dictionaryWithContentsOfFile:
-          [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:
-           @"MKStoreKitConfigs.plist"]];
-}
-
 - (void) restorePreviousTransactionsOnComplete:(void (^)(void)) completionBlock
                                        onError:(void (^)(NSError*)) errorBlock
 {
@@ -232,10 +272,12 @@ static MKStoreManager* _sharedStoreManager;
 
 -(void) requestProductData
 {
+  NSAssert([[[MKStoreManager sharedManager] sharedSecret] length] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
+
   NSMutableArray *productsArray = [NSMutableArray array];
-  NSArray *consumables = [[[MKStoreManager storeKitItems] objectForKey:@"Consumables"] allKeys];
-  NSArray *nonConsumables = [[MKStoreManager storeKitItems] objectForKey:@"Non-Consumables"];
-  NSArray *subscriptions = [[[MKStoreManager storeKitItems] objectForKey:@"Subscriptions"] allKeys];
+  NSArray *consumables = [[self.storeKitItems objectForKey:@"Consumables"] allKeys];
+  NSArray *nonConsumables = [self.storeKitItems objectForKey:@"Non-Consumables"];
+  NSArray *subscriptions = [[self.storeKitItems objectForKey:@"Subscriptions"] allKeys];
   
   [productsArray addObjectsFromArray:consumables];
   [productsArray addObjectsFromArray:nonConsumables];
@@ -247,11 +289,12 @@ static MKStoreManager* _sharedStoreManager;
 }
 
 +(NSMutableArray*) allProducts {
+  NSAssert([[[MKStoreManager sharedManager] sharedSecret] length] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
   
   NSMutableArray *productsArray = [NSMutableArray array];
-  NSArray *consumables = [[[self storeKitItems] objectForKey:@"Consumables"] allKeys];
-  NSArray *nonConsumables = [[self storeKitItems] objectForKey:@"Non-Consumables"];
-  NSArray *subscriptions = [[[self storeKitItems] objectForKey:@"Subscriptions"] allKeys];
+  NSArray *consumables = [[[[self sharedManager] storeKitItems] objectForKey:@"Consumables"] allKeys];
+  NSArray *nonConsumables = [[[self sharedManager] storeKitItems] objectForKey:@"Non-Consumables"];
+  NSArray *subscriptions = [[[[self sharedManager] storeKitItems] objectForKey:@"Subscriptions"] allKeys];
   
   [productsArray addObjectsFromArray:consumables];
   [productsArray addObjectsFromArray:nonConsumables];
@@ -499,7 +542,8 @@ static MKStoreManager* _sharedStoreManager;
 
 - (void) startVerifyingSubscriptionReceipts
 {
-  NSDictionary *subscriptions = [[MKStoreManager storeKitItems] objectForKey:@"Subscriptions"];
+  NSAssert([[[MKStoreManager sharedManager] sharedSecret] length] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
+  NSDictionary *subscriptions = [self.storeKitItems objectForKey:@"Subscriptions"];
   
   self.subscriptionProducts = [NSMutableDictionary dictionary];
   for(NSString *productId in [subscriptions allKeys])
@@ -614,7 +658,7 @@ static MKStoreManager* _sharedStoreManager;
       }
     }
     
-    if(OWN_SERVER && SERVER_PRODUCT_MODEL)
+    if([[MKStoreManager sharedManager] ownServer] && [[MKStoreManager sharedManager] serverProductModel])
     {
       // ping server and get response before serializing the product
       // this is a blocking call to post receipt data to your server
@@ -651,7 +695,8 @@ static MKStoreManager* _sharedStoreManager;
 
 -(void) rememberPurchaseOfProduct:(NSString*) productIdentifier withReceipt:(NSData*) receiptData
 {
-  NSDictionary *allConsumables = [[MKStoreManager storeKitItems] objectForKey:@"Consumables"];
+  NSAssert([[[MKStoreManager sharedManager] sharedSecret] length] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
+  NSDictionary *allConsumables = [self.storeKitItems objectForKey:@"Consumables"];
   if([[allConsumables allKeys] containsObject:productIdentifier])
   {
     NSDictionary *thisConsumableDict = [allConsumables objectForKey:productIdentifier];

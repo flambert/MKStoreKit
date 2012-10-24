@@ -30,6 +30,7 @@
 //	4) A paypal donation to mugunth.kumar@gmail.com
 
 #import "MKSKProduct.h"
+#import "MKStoreManager.h"
 
 #import "NSData+Base64.h"
 
@@ -135,15 +136,16 @@ static NSMutableData *sDataFromConnection;
                           onComplete:(void (^)(NSNumber*)) completionBlock
                              onError:(void (^)(NSError*)) errorBlock
 {
-  if(REVIEW_ALLOWED)
+  if([[MKStoreManager sharedManager] reviewAllowed])
   {
+    NSAssert([[[MKStoreManager sharedManager] ownServer] length] > 0, @"+ [MKStoreManager setReviewAllowed:serverProductModel:ownServer:] must be called to use %@", NSStringFromSelector(_cmd));
     onReviewRequestVerificationSucceeded = [completionBlock copy];
     onReviewRequestVerificationFailed = [errorBlock copy];
     
     NSString *uniqueID = [self deviceId];
     // check udid and featureid with developer's server
 		
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@", OWN_SERVER, @"featureCheck.php"]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@", [[MKStoreManager sharedManager] ownServer], @"featureCheck.php"]];
     
     NSMutableURLRequest *theRequest = [NSMutableURLRequest requestWithURL:url 
                                                               cachePolicy:NSURLRequestReloadIgnoringCacheData 
@@ -174,7 +176,8 @@ static NSMutableData *sDataFromConnection;
   self.onReceiptVerificationSucceeded = completionBlock;
   self.onReceiptVerificationFailed = errorBlock;
   
-  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@", OWN_SERVER, @"verifyProduct.php"]];
+  NSAssert([[[MKStoreManager sharedManager] ownServer] length] > 0, @"+ [MKStoreManager setReviewAllowed:serverProductModel:ownServer:] must be called to use %@", NSStringFromSelector(_cmd));
+  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@", [[MKStoreManager sharedManager] ownServer], @"verifyProduct.php"]];
 	
 	NSMutableURLRequest *theRequest = [NSMutableURLRequest requestWithURL:url 
                                                             cachePolicy:NSURLRequestReloadIgnoringCacheData 

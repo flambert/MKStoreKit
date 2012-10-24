@@ -35,7 +35,6 @@
 
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
-#import "MKStoreKitConfigs.h"
 
 #define kReceiptStringKey @"MK_STOREKIT_RECEIPTS_STRING"
 
@@ -51,11 +50,22 @@
 
 @interface MKStoreManager : NSObject<SKProductsRequestDelegate, SKPaymentTransactionObserver>
 
+// This is the initialization method you must call before using any functions
++ (void)setStoreKitItems:(NSDictionary *)storeKitItems sharedSecret:(NSString *)sharedSecret;
++ (void)setReviewAllowed:(BOOL)reviewAllowed serverProductModel:(NSUInteger)serverProductModel ownServer:(NSString *)ownServer;
+
 // These are the methods you will be using in your app
 + (MKStoreManager*)sharedManager;
 
 // this is a class method, since it doesn't require the store manager to be initialized prior to calling
 + (BOOL) isFeaturePurchased:(NSString*) featureId;
+
+@property (nonatomic, readonly) NSDictionary *storeKitItems;
+@property (nonatomic, readonly) NSString *sharedSecret;
+
+@property (nonatomic, readonly) BOOL reviewAllowed;
+@property (nonatomic, readonly) NSUInteger serverProductModel;
+@property (nonatomic, readonly) NSString* ownServer;
 
 @property (nonatomic, strong) NSMutableArray *purchasableObjects;
 @property (nonatomic, strong) NSMutableDictionary *subscriptionProducts;
