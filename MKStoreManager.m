@@ -272,7 +272,7 @@ static NSString* MKStoreManager__ownServer;
 
 -(void) requestProductData
 {
-  NSAssert([[[MKStoreManager sharedManager] sharedSecret] length] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
+  NSAssert([[[MKStoreManager sharedManager] storeKitItems] count] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
 
   NSMutableArray *productsArray = [NSMutableArray array];
   NSArray *consumables = [[self.storeKitItems objectForKey:@"Consumables"] allKeys];
@@ -289,7 +289,7 @@ static NSString* MKStoreManager__ownServer;
 }
 
 +(NSMutableArray*) allProducts {
-  NSAssert([[[MKStoreManager sharedManager] sharedSecret] length] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
+  NSAssert([[[MKStoreManager sharedManager] storeKitItems] count] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
   
   NSMutableArray *productsArray = [NSMutableArray array];
   NSArray *consumables = [[[[self sharedManager] storeKitItems] objectForKey:@"Consumables"] allKeys];
@@ -542,7 +542,7 @@ static NSString* MKStoreManager__ownServer;
 
 - (void) startVerifyingSubscriptionReceipts
 {
-  NSAssert([[[MKStoreManager sharedManager] sharedSecret] length] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
+  NSAssert([[[MKStoreManager sharedManager] storeKitItems] count] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
   NSDictionary *subscriptions = [self.storeKitItems objectForKey:@"Subscriptions"];
   
   self.subscriptionProducts = [NSMutableDictionary dictionary];
@@ -695,7 +695,7 @@ static NSString* MKStoreManager__ownServer;
 
 -(void) rememberPurchaseOfProduct:(NSString*) productIdentifier withReceipt:(NSData*) receiptData
 {
-  NSAssert([[[MKStoreManager sharedManager] sharedSecret] length] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
+  NSAssert([[[MKStoreManager sharedManager] storeKitItems] count] > 0, @"+ [MKStoreManager setStoreKitItems:sharedSecret:] must be called to use %@", NSStringFromSelector(_cmd));
   NSDictionary *allConsumables = [self.storeKitItems objectForKey:@"Consumables"];
   if([[allConsumables allKeys] containsObject:productIdentifier])
   {
